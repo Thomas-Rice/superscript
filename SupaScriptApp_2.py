@@ -450,6 +450,7 @@ class guiUtils():
 	def __init__(self,basePath,globalSettingsPath):
 		self.basePath = basePath
 		self.globalSettingsPath = globalSettingsPath
+		self.product_type = 'Joota'
 
 
 		self.file_size = 0
@@ -478,7 +479,7 @@ class guiUtils():
 
 	def getBuild(self, buildType):
 		self.utilsObject.retrieveFromJenkins(buildType)
-		self.jenkinsObject = jenkinsBuild(self.basePath,buildType)
+		self.jenkinsObject = jenkinsBuild(self.basePath,buildType,self.product_type)
 		self.buildNumber = self.jenkinsObject.stableMoveAndExtract()
 		return self.buildNumber
 
@@ -488,7 +489,7 @@ class guiUtils():
 
 	def getSpecific(self,buildType,userDefinedBuildNumber):
 		self.utilsObject.retrieveFromJenkins('Specific',userDefinedBuildNumber,buildType)
-		self.jenkinsObject = jenkinsBuild(self.basePath,buildType)
+		self.jenkinsObject = jenkinsBuild(self.basePath,buildType,,self.product_type)
 		self.newFolderPath = self.jenkinsObject.stableMoveAndExtract()
 
 	def runBuild(self,type,path):
