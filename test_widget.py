@@ -92,7 +92,6 @@ class Container(QtGui.QWidget):
 		#stretch the row to fill the screen
 		self.table.horizontalHeader().setStretchLastSection(True)
 
-		self.button = QtGui.QPushButton('Save And Exit')
 
 
 	def create_layout(self):
@@ -102,8 +101,7 @@ class Container(QtGui.QWidget):
 		self.setLayout(main_layout)
 
 	def create_connections(self):
-		self.button.clicked.connect(self.make_final_dictionary)
-
+		pass
 
 	def populate(self, config = None):
 		if config:
@@ -117,9 +115,6 @@ class Container(QtGui.QWidget):
 			block = BlockWidget(self.__product_name[index],configurations)
 			block.visibilityToggled.connect(self.resizeRows)
 			self.table.setCellWidget(index, 0, block)
-
-		self.table.setCellWidget(index + 1 , 0, self.button)
-
 
 		self.table.resizeRowsToContents()
 
@@ -153,11 +148,7 @@ class Container(QtGui.QWidget):
 		return final_list
 
 
-
-
-
 class main_window(QtGui.QWidget):
-
 	def __init__(self,products,jenkins_object,parent = None):
 		super(main_window, self).__init__(parent)
 		self.height = 600
@@ -166,9 +157,9 @@ class main_window(QtGui.QWidget):
 		self.jenkins_object = jenkins_object
 		self.products = products
 
-
 		self.layout = 'First_Page'
-
+		self.config_window_generated = False
+		self.chosen_products = ''
 
 		self.product_form = product_window(self.products)
 
@@ -180,6 +171,7 @@ class main_window(QtGui.QWidget):
 	def create_widgets(self):
 		self.button = QtGui.QPushButton('Generate Build List')
 		self.button2 = QtGui.QPushButton('Generate Config List')
+		self.button3 = QtGui.QPushButton('Save and Exit')
 		self.splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
 
 		self.splitter.addWidget(self.product_form)
@@ -193,46 +185,78 @@ class main_window(QtGui.QWidget):
 		main_layout.addWidget(self.splitter)
 		main_layout.addWidget(self.button)
 		main_layout.addWidget(self.button2)
+		main_layout.addWidget(self.button3)
 		self.setLayout(main_layout)
 
 	def create_connections(self):
 		self.button.clicked.connect(self.change_Layout)
 		self.button2.clicked.connect(self.generate_config_window)
+		self.button3.clicked.connect(self.save_and_exit)
 
 	def change_Layout(self):
 		if self.layout == "First_Page":
+			chosen_products = self.product_form.return_checked()
+			#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
+			if chosen_products != self.chosen_products:
+				self.chosen_products = chosen_products
+				#get the builds from jenkins for each product
+				product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
+				#Populate the checkboxes
+				self.checkbox_form = Container(product_and_config[0],product_and_config[1])
+				# Add the widget
+				self.splitter.addWidget(self.checkbox_form)
+				self.layout = 'Second_Page'
 
-			#get the builds from jenkins for each product
-			product_and_config = self.jenkins_object.populate_products_with_builds(self.products)
-			#Populate the checkboxes
-			self.checkbox_form = Container(product_and_config[0],product_and_config[1])
 
-			self.splitter.addWidget(self.checkbox_form)
-			self.layout = 'Second_Page'
+		elif self.layout == "Second_Page":
+			chosen_products = self.product_form.return_checked()
+			#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
+			if chosen_products != self.chosen_products:
+				self.chosen_products = chosen_products
+				product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
+				#Populate the checkboxes with product names and a dictionary of the builds
+				self.checkbox_form = Container(product_and_config[0],product_and_config[1])
+				# Get the count of the widgets in the splitter
+				count = self.splitter.count()
+				# Hide each widget when selecting a new product
+				for widget in range(1,count):
+					self.splitter.widget(widget).hide()
+				# resize back to original 
+				self.resize(400,self.height)
+				# Insert the new widget
+				self.splitter.insertWidget(1,self.checkbox_form)
+				self.config_window_generated = False
 
 		else:
-			product_and_config = self.jenkins_object.populate_products_with_builds(self.products)
-			#Populate the checkboxes with product names and a dictionary of the builds
-			# print product_and_config[1]
-			self.checkbox_form = Container(product_and_config[0],product_and_config[1])
-
-			self.splitter.widget(1).hide()
-			self.splitter.insertWidget(1,self.checkbox_form)
-			self.layout = 'Second_Page'
+			pass
 
 	def generate_config_window(self):
-		formatted_config_list = []
-		build_list = []
-		config_dictionary = self.checkbox_form.make_final_dictionary()
-		formatted_config_list.append(config_dictionary[1])
-		for each in config_dictionary[1]:
-			build_list.append(each)
-			formatted_config_list.append(config_dictionary[1][each]) 
-		del formatted_config_list[0]
-		self.config_checbox_form = Container(build_list,formatted_config_list)
-		self.resize(800,self.height)
-		self.splitter.addWidget(self.config_checbox_form)
+		if self.config_window_generated == False:
+			formatted_config_list = []
+			build_list = []
+			# Get the configuration dictionary from the checkboxes
+			config_dictionary = self.checkbox_form.make_final_dictionary()
+			# Format it correctly to pass into to the checkbox widget
+			formatted_config_list.append(config_dictionary[1])
+			# Check to see if the user has selected anything
+			if config_dictionary[0] != []:
+				for each in config_dictionary[1]:
+					build_list.append(each)
+					formatted_config_list.append(config_dictionary[1][each]) 
+				#delete the name of the product from the dictionary list as we dont need it and it gets in the way 
+				del formatted_config_list[0]
+				self.config_checkbox_form = Container(build_list,formatted_config_list)
+				# Resize the widget to accomodate the new widget
+				self.resize(800,self.height)
+				# Insert the widget
+				self.splitter.insertWidget(2,self.config_checkbox_form)
+				self.config_window_generated = True
 
+
+	def save_and_exit(self):
+		# pass
+		output = self.splitter.widget(2).return_configs()
+		print output
 
 
 
@@ -285,35 +309,32 @@ class choose_projects():
 	def __init__(self):
 		self.products = []
 
-
-
 	def get_product_list(self):
 		# #until i get something working with this it will have to be manual OR I can do a dictionary where the user can add to it
 
-		products = ['Mari','Modo','Nuke']
-		#products = ['Collectives','Colourway','Core','Gonzo',"HPC",'Katana','Licensing','Live','MVC','Mari','Mischief','Modo','Nuke','Playground','Research']
+		# products = ['Mari','Modo','Nuke']
+		products = ['Collectives','Colourway','Core','Gonzo',"HPC",'Katana','Licensing','Live','MVC','Mari','Mischief','Modo','Nuke','Playground','Research']
 		return products
 
 	def populate_products_with_builds(self,product_list):
 		self.config = []
+		self.products = []
+		# Get the builds from selected products and write it to a dictionary
 		ins = getProjectConfigurations()
 		ins.return_multiple_projects(product_list)
-
+		# Read it from the dictionary
 		with open('jenkins_Builds.json') as data_file:
 			test1 = json.load(data_file)
 
-
+		# Format the data so that we get a list that contains the product name and a dictionary for each product
 		for each in test1:
+			# Products
 			self.products.append(each)
+			# Dictionary of builds
 			self.config.append(test1[each])
-
 
 		combined_list = [self.products, self.config]
 		return combined_list
-
-
-
-
 
 
 

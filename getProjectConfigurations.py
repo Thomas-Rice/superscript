@@ -46,9 +46,9 @@ class getProjectConfigurations:
 	def output(self,product):
 		jsontest = self.get_OS_configurations(product)
 
-		print jsontest
-		for each in jsontest[product]:
-			print each
+		# print jsontest
+		# for each in jsontest[product]:
+			# print each
 			# print jsontest[each]
 			# for i in jsontest[each]:
 			# 	print jsontest[each]
@@ -66,7 +66,7 @@ class getProjectConfigurations:
 		with open ("jenkins_Builds.json", "w") as outfile:
 			json.dump(output_dict, outfile)
 
-		print output_dict
+		# print output_dict
 		return output_dict
 
 
