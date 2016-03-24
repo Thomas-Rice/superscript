@@ -14,13 +14,10 @@ class removePrefs:
 		self.localOS = platform.system()
 		self.jootaLocation = jootaLocation
 		self.footwearPath = footwearPath
+		self.jootaDir = 'Joota'
 
 
 	def delete(self):
-		#Set the path to your footwear global settings folder
-
-		
-
 		#Windows 
 		if self.localOS == 'Windows':
 			self.prefs = 'JOOTA901.CFG'
@@ -31,12 +28,11 @@ class removePrefs:
 				self.settingsPath = '{}\Settings\Modo\mAdiGlobalSettings.py'.format(self.footwearPath)
 				self.prefsList.append(self.settingsPath)
 
-			self.jootaDir = 'Joota'
 			self.dirPath = '{}\AppData\Roaming\Luxology\{}'.format(self.user, self.jootaDir)
 		#Mac
 		elif self.localOS == 'Darwin' or self.localOS == 'MacOS':
-			self.prefs = ['com.luxology.joota.plist', 'com.luxology.joota901']
-			self.jootaDir = 'Joota'
+			self.prefs = ['com.luxology.joota.plist', 'com.luxology.joota901','com.luxology.joota_cl904','com.luxology.joota904',
+							'com.luxology.modo901','com.luxology.modo902','com.luxology.modo903','com.luxology.modo904','com.luxology.modo.plist']
 
 			# append filepath strings to a list for deletion
 			for pref in self.prefs:
