@@ -3,6 +3,42 @@ import json
 from PySide import QtCore, QtGui
 from getProjectConfigurations import *
 
+
+class AddProductToSetupDialogue(QtGui.QWidget):
+	def __init__(self):
+		super(AddProductToSetupDialogue, self).__init__()
+		pass
+
+	def create_layout(self):
+		text, ok = QtGui.QInputDialog.getText(self, 'Add Product To Config', 
+			'Type new product name:')
+		if ok:
+			return str(text)
+
+class RemoveProductToSetupDialogue(QtGui.QWidget):
+	def __init__(self,products):
+		super(RemoveProductToSetupDialogue, self).__init__()
+		pass
+
+	def closeEvent(self):
+		reply = QtGui.QMessageBox.question(self, 'Confirm Removal',
+			"Are you sure to quit?", QtGui.QMessageBox.Yes | 
+			QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+
+		if reply == QtGui.QMessageBox.Yes:
+			return True
+		else:
+			return False
+
+class errorDialog(QtGui.QWidget):
+	def __init__(self,message):
+		super(errorDialog, self).__init__()
+		self.display_message(message)
+
+	def display_message(self,message):
+		reply = QtGui.QMessageBox.question(self, 'Error',
+			message, QtGui.QMessageBox.Ok, QtGui.QMessageBox.Ok)
+
 class BlockWidget(QtGui.QWidget):
 	visibilityToggled = QtCore.Signal()
 
@@ -154,8 +190,13 @@ class main_window(QtGui.QWidget):
 		self.height = 600
 		self.resize(400,self.height)
 
-		self.jenkins_object = jenkins_object
 		self.products = products
+		self.jenkins_object = jenkins_object
+		# add products dialog window
+		self.add_dialog = AddProductToSetupDialogue()
+		# Remove products dialog window
+		self.remove_dialog = RemoveProductToSetupDialogue(self.products)
+
 
 		self.layout = 'First_Page'
 		self.config_window_generated = False
@@ -172,12 +213,12 @@ class main_window(QtGui.QWidget):
 		self.button = QtGui.QPushButton('Generate Build List')
 		self.button2 = QtGui.QPushButton('Generate Config List')
 		self.button3 = QtGui.QPushButton('Save and Exit')
+		self.button4 = QtGui.QPushButton('Remove Product (Take out later)')
+		self.button5 = QtGui.QPushButton('Add Product (Take out later)')
 		self.splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
 
 		self.splitter.addWidget(self.product_form)
 		self.splitter.setSizes([70,230])
-
-
 
 	def create_layout(self):
 		main_layout = QtGui.QVBoxLayout()
@@ -186,49 +227,61 @@ class main_window(QtGui.QWidget):
 		main_layout.addWidget(self.button)
 		main_layout.addWidget(self.button2)
 		main_layout.addWidget(self.button3)
+		main_layout.addWidget(self.button4)
+		main_layout.addWidget(self.button5)
 		self.setLayout(main_layout)
 
 	def create_connections(self):
 		self.button.clicked.connect(self.change_Layout)
 		self.button2.clicked.connect(self.generate_config_window)
 		self.button3.clicked.connect(self.save_and_exit)
+		self.button4.clicked.connect(self.remove_product)
+		self.button5.clicked.connect(self.add_product)
 
 	def change_Layout(self):
-		if self.layout == "First_Page":
-			chosen_products = self.product_form.return_checked()
-			#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
-			if chosen_products != self.chosen_products:
-				self.chosen_products = chosen_products
-				#get the builds from jenkins for each product
-				product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
-				#Populate the checkboxes
-				self.checkbox_form = Container(product_and_config[0],product_and_config[1])
-				# Add the widget
-				self.splitter.addWidget(self.checkbox_form)
-				self.layout = 'Second_Page'
+		try:
+			if self.layout == "First_Page":
+				chosen_products = self.product_form.return_checked()
+				#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
+				if chosen_products != self.chosen_products:
+					self.chosen_products = chosen_products
+					#get the builds from jenkins for each product
+					product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
+					#Populate the checkboxes
+					self.checkbox_form = Container(product_and_config[0],product_and_config[1])
+					# Add the widget
+					self.splitter.addWidget(self.checkbox_form)
+					self.layout = 'Second_Page'
 
 
-		elif self.layout == "Second_Page":
-			chosen_products = self.product_form.return_checked()
-			#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
-			if chosen_products != self.chosen_products:
-				self.chosen_products = chosen_products
-				product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
-				#Populate the checkboxes with product names and a dictionary of the builds
-				self.checkbox_form = Container(product_and_config[0],product_and_config[1])
-				# Get the count of the widgets in the splitter
-				count = self.splitter.count()
-				# Hide each widget when selecting a new product
-				for widget in range(1,count):
-					self.splitter.widget(widget).hide()
-				# resize back to original 
-				self.resize(400,self.height)
-				# Insert the new widget
-				self.splitter.insertWidget(1,self.checkbox_form)
-				self.config_window_generated = False
+			elif self.layout == "Second_Page":
+				chosen_products = self.product_form.return_checked()
+				#check if the user has selected a new check box, if so then regenerate the list if not then dont move. 
+				if chosen_products != self.chosen_products:
+					self.chosen_products = chosen_products
+					product_and_config = self.jenkins_object.populate_products_with_builds(self.chosen_products)
+					#Populate the checkboxes with product names and a dictionary of the builds
+					self.checkbox_form = Container(product_and_config[0],product_and_config[1])
+					self.hide_widgets()
+					# resize back to original 
+					self.resize(400,self.height)
+					# Insert the new widget
+					self.splitter.insertWidget(1,self.checkbox_form)
+					self.config_window_generated = False
 
-		else:
-			pass
+			else:
+				pass
+		except IOError:
+			window = errorDialog('Cannot Connect to Jenkins, \n Please Check Connection')
+		except:
+			window = errorDialog('If you have added a new product, \n please check the name is correct (This is case sensitive)')
+
+
+	def hide_widgets(self):
+		count = self.splitter.count()
+		# Hide each widget when selecting a new product
+		for widget in range(1,count):
+			self.splitter.widget(widget).hide()
 
 	def generate_config_window(self):
 		if self.config_window_generated == False:
@@ -258,6 +311,40 @@ class main_window(QtGui.QWidget):
 		output = self.splitter.widget(2).return_configs()
 		print output
 
+	def remove_product(self,extra = None):
+		#Get the boolean for if the user is sure they want to delete or not
+		bool_check = self.remove_dialog.closeEvent()
+		# If the user does
+		if bool_check == True:
+			product_to_be_removed_list = []
+			#Get Checked Products to Remove
+			product_to_be_removed = self.product_form.return_checked()
+			for item in product_to_be_removed:
+				product_to_be_removed_list.append(item)
+			# Remove products
+			updated_product_list = self.jenkins_object.remove_product_from_list(product_to_be_removed_list)
+			# Regenerate Product Window
+			self.regenerate_widget(updated_product_list)
+
+			self.hide_widgets()
+		else:
+			pass
+
+	def add_product(self,extra = None):
+		# Get the input from the user
+		new_product = self.add_dialog.create_layout()
+		#add in extra products
+		updated_product_list = self.jenkins_object.write_product_list(new_product)
+		# # Regenerate Product Window
+		self.regenerate_widget(updated_product_list)
+
+	def regenerate_widget(self,product_list):
+		self.splitter.widget(0).hide()
+		self.product_form = product_window(product_list)
+		self.splitter.insertWidget(0,self.product_form)
+		self.splitter.setSizes([70,230])
+		self.resize(400,self.height)
+
 
 
 class product_window(QtGui.QWidget):
@@ -278,9 +365,15 @@ class product_window(QtGui.QWidget):
 	def create_widgets(self):
 		self.checkBoxContainer = QtGui.QWidget(self)
 
+		#Sort the list of names
+		tmp_list = []
+		for name in self.products:
+			tmp_list.append(name)
+		tmp_list.sort()
+
 		checkBoxLayout = QtGui.QVBoxLayout()
 		checkBoxLayout.setContentsMargins(0,0,0,0)
-		for name in self.products:
+		for name in tmp_list:
 			checkBox = QtGui.QCheckBox(name)
 			self.checkboxes[name] = checkBox
 			checkBoxLayout.addWidget(checkBox)
@@ -307,14 +400,53 @@ class product_window(QtGui.QWidget):
 
 class choose_projects():
 	def __init__(self):
-		self.products = []
+		pass
+
+	def write_product_list(self, extra = None):
+		# Open the currently saved dictionary
+		products = self.read_and_write_Json("subScript_General_Settings.json")
+		# If the user does not want to add anythin to the list then assign the usual suspects
+		if extra == None:
+			products['product'] = ['Collectives','Gonzo',"HPC",'Katana','Licensing','Mari','Modo','Nuke','Research']
+		else:
+			# Get the list from the dictionary
+			updated_list = products['product']
+			#Add the extra project
+			updated_list.append(extra)
+			# Put it back in the dictionary
+			products['product'] = updated_list
+		# Write it out
+		self.read_and_write_Json("subScript_General_Settings.json",products,'w')
+		return products['product']
+
+	def remove_product_from_list(self,chosen_products):
+		products = self.read_and_write_Json("subScript_General_Settings.json")
+		product_list = products['product']
+		#Remove all the products the user wants to delete
+		for product in chosen_products:
+			# print product
+			product_list.remove(product)
+
+		products['product'] = product_list	
+		# Write it out
+		self.read_and_write_Json("subScript_General_Settings.json",products,'w')
+		return products['product']
 
 	def get_product_list(self):
-		# #until i get something working with this it will have to be manual OR I can do a dictionary where the user can add to it
+		products = {}
+		# Read in the Json
+		products = self.read_and_write_Json("subScript_General_Settings.json")
+		return products['product']
 
-		# products = ['Mari','Modo','Nuke']
-		products = ['Collectives','Colourway','Core','Gonzo',"HPC",'Katana','Licensing','Live','MVC','Mari','Mischief','Modo','Nuke','Playground','Research']
-		return products
+	def read_and_write_Json(self,json_to_read, data = None,arg = None):
+		if arg == "w":
+			with open (json_to_read, "w") as outfile:
+				json.dump(data, outfile)
+		else:
+			with open(json_to_read) as data_file:
+				returned_data = json.load(data_file)
+			return returned_data
+
 
 	def populate_products_with_builds(self,product_list):
 		self.config = []
@@ -336,20 +468,19 @@ class choose_projects():
 		combined_list = [self.products, self.config]
 		return combined_list
 
-
-
 def main():
 	global app
 	global wid
 
 	project_choices = choose_projects()
 	products = project_choices.get_product_list()
-
+	# project_choices.write_product_list()
 
 	app = QtGui.QApplication(sys.argv)
 
 	wid = main_window(products, project_choices)
 	wid.show()
+
 	sys.exit(app.exec_())
 
 if __name__ == '__main__':

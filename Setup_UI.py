@@ -468,19 +468,250 @@ class choose_projects():
 		combined_list = [self.products, self.config]
 		return combined_list
 
+
+class styleSheet():
+	def __init__(self):
+		pass
+	def returnSheet(self):
+		sheet = '''
+		QToolTip
+		{
+		     border: 2px solid black;
+		     background-color: #ffa02f;
+		     padding: 1px;
+
+		}
+
+		QWidget
+		{
+		    /*Text*/
+		    color: #b1b1b1;
+		    /*Change the background colour of the item*/
+		    background-color: #323232;
+		}
+
+		QWidget:item:hover
+		{
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #ca0619);
+		    color: #000000;
+		}
+
+
+		QWidget:disabled
+		{
+		    color: #404040;
+		    background-color: #323232;
+		}
+
+
+		QAbstractItemView
+		{
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0.1 #646464, stop: 1 #5d5d5d);
+		}
+
+
+
+		QLineEdit
+		{
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #4d4d4d, stop: 0 #646464, stop: 1 #5d5d5d);
+		    padding: 1px;
+		    border-style: solid;
+		    border: 1px solid #1e1e1e;
+		    border-radius: 5;
+		}
+
+		QPushButton
+		{
+		    color: #b1b1b1;
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #565656, stop: 0.1 #525252, stop: 0.5 #4e4e4e, stop: 0.9 #4a4a4a, stop: 1 #464646);
+		    border-width: 2px;
+		    border-color: #222222;
+		    border-style: solid;
+		    border-radius: 6;
+		    padding: 3px;
+		    font-size: 12px;
+		    padding-left: 5px;
+		    padding-right: 5px;
+		}
+
+
+		QPushButton:pressed
+		{
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2d2d2d, stop: 0.1 #2b2b2b, stop: 0.5 #292929, stop: 0.9 #282828, stop: 1 #252525);
+		}
+
+		QComboBox
+		{
+		    selection-background-color: #262626;
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #565656, stop: 0.1 #525252, stop: 0.5 #4e4e4e, stop: 0.9 #4a4a4a, stop: 1 #464646);
+		    border-style: solid;
+		    border: 1px solid #1e1e1e;
+		    border-radius: 5;
+		}
+
+		QComboBox:hover,QPushButton:hover
+		{
+		    border: 2px solid #ffa02f;
+		}
+
+
+		QComboBox:on
+		{
+		    padding-top: 3px;
+		    padding-left: 4px;
+		    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #2d2d2d, stop: 0.1 #2b2b2b, stop: 0.5 #292929, stop: 0.9 #282828, stop: 1 #252525);
+		    selection-background-color: #262626;
+		}
+
+		QComboBox QAbstractItemView
+		{
+		    border: 0px solid darkgrey;
+		    selection-background-color: #262626;
+		    opacity: 60;
+
+		}
+
+		QComboBox::drop-down
+		{
+		     subcontrol-origin: padding;
+		     subcontrol-position: top right;
+		     width: 15px;
+
+		     border-left-width: 0px;
+		     border-left-color: darkgray;
+		     border-left-style: solid; /* just a single line */
+		     border-top-right-radius: 3px; /* same radius as the QComboBox */
+		     border-bottom-right-radius: 3px;
+
+		 }
+
+
+
+		QGroupBox:focus
+		{
+		border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+		}
+
+		QTextEdit:focus
+		{
+		    border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+		}
+
+
+
+		QDockWidget::title
+		{
+		    text-align: center;
+		    spacing: 3px; /* spacing between items in the tool bar */
+		}
+
+
+
+		QTabBar::tab {
+		    /* The colour of the tab text */
+		    color: #b1b1b1;
+		    border: 1px solid black;
+		    border-bottom-style: none;
+		    background-color: #323232;
+		    padding-left: 10px;
+		    padding-right: 10px;
+		    padding-top: 3px;
+		    padding-bottom: 2px;
+		    margin-right: -1px;
+		}
+
+		QTabWidget::pane {
+		    /* The colour border */
+		    border: 1px solid black;
+		    top: -1px;
+		}
+
+		QTabBar::tab:last
+		{
+		    margin-right: 1; /* the last selected tab has nothing to overlap with on the right */
+		    border-top-right-radius: 3px;
+		}
+
+		QTabBar::tab:first:!selected
+		{
+		    margin-left: 0px; /* the last selected tab has nothing to overlap with on the right */
+
+
+		    border-top-left-radius: 3px;
+		}
+
+		QTabBar::tab:!selected
+		{
+		    color: #b1b1b1;
+		    background-color: white;
+		    border-bottom-style: solid;
+		    margin-top: 3px;
+		    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #404040, stop:.4 #4d4d4d);
+		}
+
+		QTabBar::tab:selected
+		{
+		    background-color: #262626;
+		    border-top-left-radius: 3px;
+		    border-top-right-radius: 3px;
+		    margin-bottom: 0px;
+		}
+
+		QTabBar::tab:!selected:hover
+		{
+		    /*border-top: 2px solid #ffaa00;
+		    padding-bottom: 3px;*/
+		    border-top-left-radius: 3px;
+		    border-top-right-radius: 3px;
+		    background-color: QLinearGradient(x1:0, y1:0, x2:0, y2:1, stop:1 #212121, stop:0.4 #343434, stop:0.2 #343434, stop:0.1 #ffaa00);
+		}
+
+		QComboBox::down-arrow
+		{
+		     image: url(:/down_arrow.png);
+		}
+
+		QProgressBar
+		{
+		    border: 2px solid grey;
+		    border-radius: 5px;
+		    text-align: center;
+		}
+
+		QProgressBar::chunk
+		{
+		    background-color: #d7801a;
+		    width: 2.15px;
+		    margin: 0.5px;
+		}
+
+
+
+		'''
+		return sheet
+
 def main():
 	global app
 	global wid
+
+	styleSheetObject = styleSheet()
+	styleData = styleSheetObject.returnSheet()
 
 	project_choices = choose_projects()
 	products = project_choices.get_product_list()
 	# project_choices.write_product_list()
 
 	app = QtGui.QApplication(sys.argv)
+	# app.setStyle("plastique")
 	wid = main_window(products, project_choices)
+
+	wid.setStyleSheet(styleData)
 	wid.show()
 
 	sys.exit(app.exec_())
+
+
+
 
 if __name__ == '__main__':
    test = main()
